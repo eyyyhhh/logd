@@ -1,0 +1,449 @@
+{% extends 'main.html'%}
+{% load static %}
+{% block content%}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- css files -->
+<link rel="stylesheet" href="{% static 'css/users.css'%}">
+
+<div class="maincon">
+    <div class="container1">
+        
+        <div class="box-con d-flex flex-row">
+            <div class="box d-flex flex-column">
+                <p class="desc-num"> {{ totalStudent }} </p>
+               <p class="title-box"> Total Number of Students</p>
+            </div>
+            <div class="box d-flex flex-column">
+                <p class="desc-num"> {{ totalPersonnel }} </p>
+                <p class="title-box"> Total Number of School Personnel</p>
+            </div>
+            
+        </div>
+        <button type="button" class="primaryBtn " data-bs-toggle="modal" data-bs-target="#myModal">
+            Add User
+        </button>
+    </div>
+
+    <div class="container2">
+
+        <!-- Table for registered user -->
+        <div class="tableCon ">
+            <table class="tables">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">School ID</th>
+                        <th scope="col">Username</th>
+                        <th scope="col">Age</th>
+                        <th scope="col">Birthday</th>
+                        <th scope="col">Gender</th>
+                        <th scope="col">User type</th>
+                        <th scope="col">Phone</th>
+                        <th scope="col">Address</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in item.object_list %}
+                        <tr  id="user-{{item.id}}">
+                            <td scope="row" class="userID">{{ item.id }}</td>
+                            <td class="userNum">{{ item.usernum }}</td>
+                            <td class="userName">{{ item.username }}</td>
+                            <td class="userAge">{{ item.age }}</td>
+                            <td class="userBirthdate">{{ item.birthdate }}</td>
+                            <td class="userPass" style="display: none;">{{ item.password }}</td>
+                            <td class="userGender">{{ item.gender }}</td>
+                            <td class="userUserType">{{ item.usertype }}</td>
+                            <td class="userMobNum">{{ item.phone }}</td>
+                            <td class="userAddress">{{ item.address }}</td>
+                            <td>
+                                <a href="{% url 'updateUser' item.id%}"  onClick="editUser({{item.id}})" type="button" data-bs-toggle="modal" data-bs-target="#myModals"  class="btn btn-outline-primary"  >
+                                <i class="bi bi-pencil-square" type="button"></i></a>
+                                <a style="margin-left: 8px;" type="button" class="btn btn-outline-danger" href="{% url 'delete_item'  item.id %}">
+                                    <i class="bi bi-person-x-fill"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Pagination for table user registered -->
+        <div class="paginations">
+            <nav aria-label="...">
+                <p class="page">Page : {{ item.number }}/ {{item.paginator.num_pages}}</p>
+                <ul class="pagination">
+                    <li class="page-item ">
+                            {% if item.has_previous %}
+                                <a class="page-link" 
+                                href="{% url 'home' %}?page={{ item.previous_page_number }}">Previous</a>
+                            {%else%}
+                                <a class="page-link disabled">Previous</a>
+                            {% endif %}
+                        </li>
+                    
+                    {% for  num_page in item.paginator.page_range %} <br>
+                    {% if item.number == num_page%} 
+                        <li class="page-item active" aria-current="page">
+                            <a class="page-link" 
+                            href="{% url 'home' %}?page={{num_page}}">{{num_page}}</a>
+                        </li>
+                        {% else %}
+                            <li class="page-item " aria-current="page">
+                                <a class="page-link" 
+                                href="{% url 'home' %}?page={{num_page}}">{{num_page}}</a>
+                            </li>
+                        {% endif %}
+                            <br>
+                    {% endfor %}
+                    <li class="page-item">
+                        {% if item.has_next %}
+                            <a class="page-link " 
+                            href="{% url 'home' %}?page={{ item.next_page_number }}">Next</a>
+                        {%else%}
+                            <a class="page-link disabled">Next</a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </nav>
+            
+        </div>
+    </div>
+</div>
+
+<!--Create Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add User Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'add_user' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form}}
+                    <div class="form-group">
+                        <label for="id_name" style="color: black;">School ID:</label>
+                        <input type="number" class="form-control" id="usernum" name="usernum">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_name" style="color: black;">Username:</label>
+                        <input type="text" class="form-control" id="" name="username">
+                    </div>
+                    <label for="id_name" style="color: black; margin-top: 15px;">Password:</label>
+                    <div class="form-group input-group">
+                        <input type="password" class="form-control" id="password" name="password">
+                        <span class="input-group-text" id="togglePasswords" onclick="togglePasswords()">
+                            <i class="bi bi-eye-slash-fill"></i>
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex flex-row">
+                        <input type="number" class="form-control" id="age" name="age" style="display: none;">
+                        <div class="form-group" style="width: 30%;">
+                            <label for="id_name" style="color: black;">Birthdate:</label>
+                            <input type="date" class="form-control" id="birthdate" oninput="calculateAge()" name="birthdate">
+                        </div>
+                        <div class="form-group" style="width: 70%; margin-left: 20px;">
+                            <label for="id_name" style="color: black;">Mobile Number:</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_name" style="color: black;">Address:</label>
+                        <input type="text" class="form-control" id="address" name="address">
+                    </div>
+                    <div class="d-flex flex-row " >
+                        <div class="form-group" style="width: 50%;">
+                            <label for="gender" style="width: 100%; color: black;">Gender:</label>
+                            <select id="gender" name="gender" class="dropDown">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                        <div class="form-group margin-left" style="width: 50%;">
+                            <label for="usertype"  style="width: 100%; color: black;">User Type:</label>
+                            <select id="usertype" name="usertype" class="dropDown">
+                                <option value="Student">Student</option>
+                                <option value="School Personnel">School Personnel</option>
+                                <option value="Security Guard">Security Guard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button  type="submit" value="Submit"  class="btn btn-primary" style="width: 100%; margin-top: 35px;">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Update Modal -->
+<div class="modal fade" id="myModals" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Update User Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action=""  enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form}}
+                    
+                    <input class="form-control" id="form-id" type="hidden" name="formId"/>
+                    <div class="form-group">
+                        <label for="id_name" style="color: black;">School ID: </label>
+                        <input class="form-control" id="form-num" type="text" name="usernum"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_name" style="color: black;">Username:</label>
+                        <input type="text" class="form-control" id="form-name">
+                    </div>
+                    <label for="id_name" style="color: black; margin-top: 15px;">Password:</label>
+                    <div class="form-group input-group">
+                        <input type="password" class="form-control" id="form-pass" >
+                        <span class="input-group-text" id="togglePassword" onclick="togglePassword()">
+                            <i class="bi bi-eye-slash-fill"></i>
+                        </span>
+                    </div>
+                    <div class="d-flex flex-row">
+                       
+                        <input type="number" class="form-control" id="form-age" name="age" style="display: none;">
+                       
+                        <div class="form-group" style="width: 30%;">
+                            <label for="id_name" style="color: black;">Birthdate:</label>
+                            <input type="date" class="form-control" id="form-birthdate" oninput="calculateAges()" name="birthdate">
+                        </div>
+                        <div class="form-group" style="width: 70%; margin-left: 20px;">
+                            <label for="id_name" style="color: black;">Mobile Number:</label>
+                            <input type="tel" class="form-control" id="form-mobNum" name="phone">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_name" style="color: black;">Address:</label>
+                        <input type="text" class="form-control" id="form-address" name="address">
+                    </div>
+                    <div class="d-flex flex-row " >
+                        <div class="form-group" style="width: 50%;">
+                            <label for="gender" style="width: 100%; color: black;">Gender:</label>
+                            <select id="form-gender" name="female" class="dropDown">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                        <div class="form-group margin-left" style="width: 50%;">
+                            <label for="usertype"  style="width: 100%; color: black;">User Type:</label>
+                            <select id="form-usertype" name="usertype" class="dropDown">
+                                <option value="Student">Student</option>
+                                <option value="School Personnel">School Personnel</option>
+                                <option value="Security Guard">Security Guard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <a onclick="save()" id="btnSave" class="btn btn-primary" style="width: 100%; margin-top: 35px;">Save</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePasswords() {
+            const passwordField = document.getElementById("password");
+            const toggleIcon = document.getElementById("togglePasswords");
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                
+                toggleIcon.innerHTML = '<i class="bi bi-eye-fill"></i>';
+            } else {
+                passwordField.type = "password";
+                toggleIcon.innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
+            }
+        }
+
+        function togglePassword() {
+            const passwordField = document.getElementById("form-pass");
+            const toggleIcon = document.getElementById("togglePassword");
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                
+                toggleIcon.innerHTML = '<i class="bi bi-eye-fill"></i>';
+            } else {
+                passwordField.type = "password";
+                toggleIcon.innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
+            }
+        }
+
+     function calculateAge() {
+       
+        // Get the birthdate from the input field
+        var birthdateInput = document.getElementById("birthdate").value;
+        // Check if a valid date is selected
+        if (birthdateInput) {
+            // Create a Date object from the birthdate string
+            var birthdate = new Date(birthdateInput);
+
+            // Get the current date
+            var currentDate = new Date();
+
+            // Calculate the difference in years
+            var age = currentDate.getFullYear() - birthdate.getFullYear();
+
+            // Check if the birthday has occurred this year
+            if (currentDate.getMonth() < birthdate.getMonth() ||
+                (currentDate.getMonth() === birthdate.getMonth() && currentDate.getDate() < birthdate.getDate())) {
+                age--;
+            }
+        }
+        
+       
+        var resultElement = document.getElementById("age");
+        resultElement.value= age;
+        
+
+    }
+    function calculateAges() {
+       
+       // Get the birthdate from the input field
+       var birthdateInput = document.getElementById("form-birthdate").value;
+       // Check if a valid date is selected
+       if (birthdateInput) {
+           // Create a Date object from the birthdate string
+           var birthdate = new Date(birthdateInput);
+
+           // Get the current date
+           var currentDate = new Date();
+
+           // Calculate the difference in years
+           var age = currentDate.getFullYear() - birthdate.getFullYear();
+
+           // Check if the birthday has occurred this year
+           if (currentDate.getMonth() < birthdate.getMonth() ||
+               (currentDate.getMonth() === birthdate.getMonth() && currentDate.getDate() < birthdate.getDate())) {
+               age--;
+           }
+       }
+       
+      
+       var resultElement = document.getElementById("form-age");
+       resultElement.value= age;
+       
+
+   }
+
+    function save(){
+           
+        var btn = document.getElementById("btnSave");
+        var userid = document.getElementById("form-id").value;
+        var usernum= document.getElementById("form-num").value;
+        var username = document.getElementById("form-name").value;
+        var password= document.getElementById("form-pass").value;
+        var phone = document.getElementById("form-mobNum").value;
+        var usertype= document.getElementById("form-usertype").value;
+        var gender = document.getElementById("form-gender").value;
+        var address = document.getElementById("form-address").value;
+        var age = document.getElementById("form-age").value;
+        var birthdate = document.getElementById("form-birthdate").value;
+       
+              
+        var url =
+        "{% url 'updateUserInfo'  'id' 'uid' 'username' 'password' 'phone' 'usertype' 'gender' 'address' 'age' 'birthdate' %}".replace('id', userid).replace('uid', usernum).replace('username', username).replace('password',password).replace('phone', phone).replace('usertype',usertype).replace('gender', gender).replace('address',address).replace('age',age).replace('birthdate',birthdate);
+        btn.href = url;
+           
+   }
+
+    // Update Django Ajax Call
+    function editUser(id) {
+        if (id) {
+            tr_id = "#user-" + id;
+            num = $(tr_id).find(".userNum").text();
+            name = $(tr_id).find(".userName").text();
+            pass = $(tr_id).find(".userPass").text();
+            mobNum = $(tr_id).find(".userMobNum").text();
+            age = $(tr_id).find(".userAge").text();
+            address = $(tr_id).find(".userAddress").text();
+            gender = $(tr_id).find(".userGender").text();
+            usertype = $(tr_id).find(".userUserType").text();
+            birthdate = $(tr_id).find(".userBirthdate").text();
+            $('#form-id').val(id);
+            $('#form-num').val(num);
+            $('#form-name').val(name);
+            $('#form-pass').val(pass);
+            $('#form-age').val(age);
+            $('#form-mobNum').val(mobNum);
+            $('#form-address').val(address);
+            $('#form-gender').val(gender);
+            $('#form-usertype').val(usertype);
+            $('#form-birthdate').val(birthdate);
+        }
+        else{
+            alert("di nagana");
+        }
+        }    
+       
+</script>
+<script>
+
+function newchart(chart, xValues, yValues){
+    var blue =' rgb(2,30,108)';
+    var white ='rgba(196, 196, 196, 0.306)';
+    var skyblue = 'rgba(3,78,193,1) ';
+    var barColors = [skyblue, skyblue, "brown"];
+    new Chart(chart,  {
+    type: "bar",
+    data: {
+        labels: xValues,
+            datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+        }]
+    },
+    options: {
+        legend: {
+            display: false
+        },
+        scales: {
+            x: {
+                grid: {
+                    color: blue // Set the x-axis grid lines color to white
+                },
+                ticks: {
+                    color: blue // Set the x-axis tick text color to white
+                }
+            },
+            y: {
+                grid: {
+                    color: white // Set the y-axis grid lines color to white
+                },
+                ticks: {
+                    color: white // Set the y-axis tick text color to white
+                }
+            }
+        }
+        }
+    });
+
+}
+
+    const male = "{{male}}";
+    const female = "{{female}}";
+    const Student = "{{totalStudent}}";
+    const Personel = "{{totalPersonnel}}";
+    var xValues = ["Male", "Female"];
+    var additional = parseInt(male) + 1;
+    var yValues = [ male , female, additional];
+    var additional2 = parseInt(Student) + 1;
+    var xValues2 = ["Student", "Personnel"];
+    var yValues2 = [ Student , Personel, additional2];
+    
+    
+    newchart("myChart", xValues,yValues);
+    newchart("myChart2", xValues2,yValues2);
+
+    
+</script>
+        
+{%endblock%}

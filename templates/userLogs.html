@@ -1,0 +1,311 @@
+{% extends 'main.html'%}
+{% load static %}
+{% block content%}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.0.0-rc.5/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+<!-- css files -->
+<link rel="stylesheet" href="{% static 'css/userslogs.css'%}">
+
+<div class="maincon">
+    <div class="container1">
+        <!-- Search Container -->
+        <div class="d-flex search-con">
+            <input class="form-control mr-sm-2 search" type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for names.." title="Type in a name">
+            
+            <div style="width: fit-content; margin-right: 30px; ">
+                <label for="usertype">User Type</label>
+                <select name="usertype" class="drop-down" id="usertype" oninput="usertype()">
+                    <option class="value" value="All" >Show All</option>
+                    <option class="value" value="Student">Student</option>
+                    <option class="value" value="School Personnel">School Personnel</option>
+                    <option class="value" value="Visitor">Visitor</option>
+                </select>
+               
+            </div>
+            <div style="width: fit-content; margin-right: 30px;">
+                <label for="usertypes">Remarks</label>
+                <select name="usertype" class="drop-down" id="remarks" oninput="remarks()">
+                    <option class="value" value="All" >Show All</option>
+                    <option class="value" value="Valid">Valid Pass</option>
+                    <option class="value" value="Mask Required">Mask Required</option>
+                    <option class="value" value="Invalid">Invalid Pass</option>
+                </select>
+              
+            </div>
+            <div style="width: fit-content; margin-right: 30px;">
+                <label for="usertype">Date From</label>
+                <div  class="primaryBtn">
+                    <input type="date" id="startDate" class="datePicker ">
+                </div>
+            </div>
+            <div style="width: fit-content;">
+                <label for="usertype">Date To</label>    
+                <div type="button" class="primaryBtn">
+                    <input type="date" id="endDate"  class="datePicker">
+                </div>
+            </div>
+        </div>
+        <button class="btnDL" onclick="generate()"> Donwload</button>
+    </div>
+    <div class="container2">
+        <div class="tableCon ">
+            <table class="tables" id="myTable">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">User Type</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Remarks</th>
+                        <th col-1></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in result %}
+                        <tr>
+                            <td scope="row">{{ item.0 }}</td>
+                            <td>{{ item.1 }}</td>
+                            <td>{% if item.8 != 1 %}Visitor {% else %}{{ item.2 }}{% endif %}</td>
+                            <td>  {{ item.3 }}</td>
+                            <td>{{ item.4 }}</td>
+                            <td>
+                                {% if  item.5  == 0 %}
+                                Valid Pass
+                                {% elif  item.5  == 1%}
+                                Mask Required
+                                {% else %}
+                                Invalid Pass
+                                {% endif %}
+                            </td>
+                            <td col-1>
+                                <a href="{% url 'viewPage'  item.6 item.8 item.0 item.7 %}"><i class="bi bi-eye-fill"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- pagination -->
+        <div class="paginations">
+            
+            <nav aria-label="...">
+                <p class="page">Page : {{ result.number }}/ {{result.paginator.num_pages}}</p>
+                <ul class="pagination">
+                    <li class="page-item ">
+                            {% if result.has_previous %}
+                                <a class="page-link" 
+                                href="{% url 'logs' %}?page={{ data_list.previous_page_number }}">Previous</a>
+                            {%else%}
+                                <a class="page-link disabled">Previous</a>
+                            {% endif %}
+                        </li>
+                    
+                    {% for  num_page in result.paginator.page_range %} <br>
+                    {% if result.number == num_page%} 
+                        <li class="page-item active" aria-current="page">
+                            <a class="page-link" 
+                            href="{% url 'home' %}?page={{num_page}}">{{num_page}}</a>
+                        </li>
+                        {% else %}
+                            <li class="page-item " aria-current="page">
+                                <a class="page-link" 
+                                href="{% url 'logs' %}?page={{num_page}}">{{num_page}}</a>
+                            </li>
+                        {% endif %}
+                            <br>
+                    {% endfor %}
+                    <li class="page-item">
+                        {% if result.has_next %}
+                            <a class="page-link " 
+                            href="{% url 'logs' %}?page={{ result.next_page_number }}">Next</a>
+                        {%else%}
+                            <a class="page-link disabled">Next</a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+   <script src="https://unpkg.com/jspdf-invoice-template@1.4.0/dist/index.js"></script>
+
+    <script>
+       var tables = [
+   {% for item in items %}
+      [
+          "\n {{ item.0 }} \n",
+          "\n {{ item.1 }} \n",
+         '\n{% if item.8 != 1 %}Visitor{% else %}{{ item.2 }}{% endif %}',
+         "\n {{ item.3}} \n",
+          "\n {{ item.4 }} \n",
+         '\n{% if  item.5  == 0 %}Valid Pass{% elif  item.5  == 1%}Mask Required{% else %}Invalid Pass{% endif %}\n'
+      ],
+   {% endfor %}
+];
+
+        function generate  (){
+        var pdfObject = jsPDFInvoiceTemplate.default(props); //returns number of pages created
+            console.log("nagana"+pdfObject);
+            console.log("nagana"+ tables);
+        }
+    
+        var tabled = Array.from(Array(10), (item, index) => tables);
+
+
+    var props = {
+        
+    returnJsPDFDocObject: true,
+    fileName: "STI College Balayan Report",
+    orientationLandscape: false,
+    compress: true,
+    
+   
+    business: {
+        name: "{{ profile.schoolName }} Report",
+        address: "{{ profile.address }}"
+    },
+   
+    invoice: {
+        headerBorder: false,
+        tableBodyBorder: false,
+        header: [
+        { title: "ID", style: { width: 10 } },
+        { title: "Name", style: { width: 60 } },
+        { title: "User Type", style: { width: 30 } },
+        { title: "Date", style: { width: 25 } },
+        { title: "Time", style: { width: 25 } },
+        { title: "Remarks", style: { width: 45 } }
+        ],
+
+        table:tables,
+       
+
+       },
+   
+    pageEnable: true,
+    pageLabel: "Page ",
+};
+
+        function navigate() {
+            var select = document.getElementById("dropdown");
+            var selectedValue = select.value;
+            if (selectedValue) {
+                window.location.href = selectedValue;
+            }
+        }
+    </script>
+    <script>
+
+     
+function filterTableDate() {
+            var startDateInput = document.getElementById("startDate");
+            var endDateInput = document.getElementById("endDate");
+            var table = document.getElementById("myTable");
+            var tr = table.getElementsByTagName("tr");
+
+            var startDate = new Date(startDateInput.value);
+            var endDate = new Date(endDateInput.value);
+
+            for (var i = 1; i < tr.length; i++) { // Start from index 1 to skip the header row
+                var td = tr[i].getElementsByTagName("td")[3]; 
+
+                if (td) {
+                    var cellDate = new Date(td.textContent || td.innerText);
+
+                    if (cellDate >= startDate && cellDate <= endDate) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        // Attach the filterTable function to the input change event
+        document.getElementById("startDate").addEventListener("change", filterTableDate);
+        document.getElementById("endDate").addEventListener("change", filterTableDate);   
+
+    function usertype(){
+        
+    var dropdown = document.getElementById("usertype");
+        filterTable(dropdown,2);
+    }
+    function remarks(){
+        
+        var dropdowns = document.getElementById("remarks");
+
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("myInput");
+        filter = dropdowns.value;
+        table = document.getElementById("myTable");
+        tr = table.getElementsByTagName("tr");
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[5];
+            if (td) {
+            txtValue = td.textContent;
+            console.log(txtValue);
+            if (txtValue.indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+            }       
+        }             
+    }
+    function filterTable(dropdown,num) {
+    // Variables
+    let  table, rows, cells, country, filter;
+    table = document.getElementById("myTable");
+    rows = table.getElementsByTagName("tr");
+    filter = dropdown.value;
+    console.log(filter);
+    // Loops through rows and hides those with countries that don't match the filter
+   try{
+    for (let row of rows) { // `for...of` loops through the NodeList
+        cells = row.getElementsByTagName("td");
+        country = cells[num] || null; // gets the 2nd `td` or nothing
+        // if the filter is set to 'All', or this is the header row, or 2nd `td` text matches filter
+        if (filter === "All" || !country || (filter === country.textContent)) {
+        row.style.display = ""; // shows this row
+        }
+        else {
+        row.style.display = "none"; // hides this row
+        }
+    }
+   }
+   catch(err){
+    console.log(err.message);
+   }
+    }
+
+        const dateInput = document.getElementById('dateInput');
+
+        // Add a click event listener to the input element
+        dateInput.addEventListener('click', function() {
+            // Add the 'clicked' class when clicked
+            dateInput.classList.add('clicked');
+        }); 
+
+        function myFunction() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("myInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("myTable");
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1];
+                if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+                }       
+            }
+        }
+    </script>
+{% endblock %}

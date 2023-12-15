@@ -1,0 +1,29 @@
+.navbar{
+    height: 8vh;
+    width: 100%;
+    display: flex;
+    justify-content: right;
+}
+.imageLogo{
+    height: 40px;
+    margin: 0 16px 0 16px;
+}
+.logo{
+    height: 100%;
+    width: 100%;
+}
+.dateTime{
+    height: 100%;
+    display: flex;
+    justify-content: center; /* Horizontally center */
+    align-items: center;
+    font-size: 17px;
+    font-weight: 500;
+    margin-right: 20px;
+}
+.actives{
+    color:rgb(5, 20, 42);
+    font-weight: 500;
+    margin: 0px 5px 0px 5px;
+    border-bottom: solid 1px rgb(3,78,193);
+}

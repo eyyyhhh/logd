@@ -1,0 +1,266 @@
+{% extends 'main.html'%}
+{% load static %}
+{% block content%}
+<!-- css files -->
+<link rel="stylesheet" href="{% static 'css/profile.css'%}">
+
+<div class="maincon">
+    <div class="upperCon flex-row d-flex">
+        <div class="container1 d-flex col-9 flex-column">
+            <div class="d-flex flex-row" style=" justify-content: center; margin-top: 20px;">
+                <input class="title" id="schoolName"  readonly disabled 
+                    value="{{ profile.schoolName }}" >
+                <i class="bi bi-text-paragraph" id="btnEdit" style="color:white; margin-left: 30px; display: block;"
+                    onclick="editProfile()"></i>
+                <a class="btnSave" onclick="save()" id="btnSave">
+                    Save</a>
+            </div>
+            <input class="desc" id="address" readonly disabled 
+            value="{{ profile.address }}">
+            <div class="box-con d-flex flex-row">
+                <div class="box d-flex flex-column">
+                    <p class="desc-num"> {{ totalStudent }} </p>
+                   <p class="title-box"> Total Number of Students</p>
+                </div>
+                <div class="box d-flex flex-column">
+                    <p class="desc-num"> {{ totalPersonnel }} </p>
+                    <p class="title-box"> Total Number of School Personnel</p>
+                </div>
+                
+            </div>
+        </div>
+        <i class="bi bi-download icon-dl"  id="capture-button" style="color: white; font-size: 1.5rem;"></i>
+        <div class="qr_con col-3" id="downloadableQR" >
+           
+                <img class="qr" src="{% url 'qr'  %}" alt="QR Code">
+                <h6 style="color: white; margin-top: 20px;">Welcome to</h6>
+                <h4 style="color: white;">{{ profile.schoolName }}</h4>
+        </div>
+    </div>
+   <div class="lowerCon d-flex flex-column">
+        <div class="MVCon d-flex flex-row" >
+            <div class="mission col-6">
+                <div class="d-flex flex-row" >
+                    <p class="titleMV">Mission</p>
+                    <i class="bi bi-text-paragraph" id="btnMEdit" style="color:rgb(2,30,108); margin-left: 30px; display: block;"
+                    onclick="Mission()"></i>
+                    <a class="btnSave" onclick="saveMission()" id="btnMSave" style="color: blue;"> Save</a>
+                </div> 
+                <textarea class="descMV" id="mission" cols="65" rows="8" readonly> {{ profile.mission }}</textarea>
+            </div>
+            <div class="vission col-4" >
+                <div class="d-flex flex-row" >
+                    <p class="titleMV">Vission</p>
+                    <i class="bi bi-text-paragraph" id="btnVEdit" style="color:rgb(2,30,108); margin-left: 30px; display: block;"
+                    onclick="Vission()"></i>
+                    <a class="btnSave" onclick="saveVission()" id="btnVSave" style="color: blue;"> Save</a>
+                </div> 
+                <textarea  class="descMV" id="vission" cols="65" rows="8" readonly> {{ profile.vission }}</textarea>
+            </div>
+        </div>
+        <div class="faq">
+            <p class="titleFAQ">FAQ - Frequently Asked Question</p>
+            <div class="addFAQ d-flex flex-column">
+                <div class="tableCon  FAQcon">
+                    <table class="tables ">
+                        <thead>
+                            <tr>
+                                <th scope="col">Question</th>
+                                <th scope="col">Answer</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in item %}
+                                <tr  id="user-{{item.id}}">
+                                    <td class="question col-3">{{ item.question }}</td>
+                                    <td class="answer col-7">{{ item.answer }}</td>
+                                    <td class="userName col-1 ">
+                                        <div class="d-flex flex-column">
+                                            <a href="{% url 'updateUser' item.id%}" style="height: 40px; width: 40px;"  onClick="editUser({{item.id}})" type="button" data-bs-toggle="modal" data-bs-target="#myModals"  class="btn btn-outline-light"  >
+                                                <i class="bi bi-pencil-square" type="button"></i></a>
+                                            <a  type="button" style="height: 40px; width: 40px; margin-top: 10px;" class="btn btn-outline-danger" href="{% url 'delete_faq'  item.id %}">
+                                                <i class="bi bi-x-lg"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <form method="POST" action="{% url 'add_FAQ' %}" class="FAQcon d-flex flex-column" style="margin-top:100px;"  enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form}}
+                    <div class="d-flex flex-row FAQcon">
+                        <div class="form-group d-flex flex-column col-5">
+                            <label for="id_name" style="color: rgb(255, 255, 255);">Question </label>
+                            <textarea class="descQA form-control"  cols="35" rows="3" id="question" name="question"></textarea>
+                        </div>
+                        <div class="form-group d-flex flex-column col-5" style="margin-left: 20px;">
+                            <label for="id_name" style="color: rgb(255, 255, 255);">Answer </label>
+                            <textarea class="descQA form-control" cols="35" rows="3" id="answer" name="answer"></textarea>
+                        </div>
+                    </div>
+                    <button  type="submit" value="Submit"  class="addbtn" >Add FAQ</button>
+                </form>
+            </div>
+        </div>
+   </div>
+</div>
+
+
+<!--Update Modal -->
+<div class="modal fade" id="myModals" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Update FAQ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action=""  enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form}}
+                    
+                    <input class="form-control" id="form-id" type="hidden" name="formId"/>
+                    <div class="form-group">
+                        <label for="id_name" style="color: black;">Question </label>
+                        <textarea class="form-control" id="form-question" rows="3" type="text" name="question"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_name" style="color: black;">Answer:</label>
+                        <textarea type="text" class="form-control" rows="8" id="form-answer" name="answer"></textarea>
+                    </div>
+                    <a onclick="saveFAQ()" id="btnSaved" class="btn btn-primary"  style="width: 100%; margin-top: 35px;">Save</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+
+<script>
+
+function saveFAQ(){
+           
+           var btn = document.getElementById("btnSaved");
+           var userid = document.getElementById("form-id").value;
+           var question= document.getElementById("form-question").value;
+           var answer = document.getElementById("form-answer").value;
+          
+                 
+           var urlss =
+           "{% url 'updateFAQ'  'id' 'question' 'answer'  %}".replace('id', userid).replace('question', question).replace('answer', answer);
+           btn.href = urlss;
+           
+      }
+   
+    // Update Django Ajax Call
+    function editUser(id) {
+        if (id) {
+            tr_id = "#user-" + id;
+            question = $(tr_id).find(".question").text();
+            answer = $(tr_id).find(".answer").text();
+            $('#form-id').val(id);
+            $('#form-question').val(question);
+            $('#form-answer').val(answer);
+            }
+        else{
+            alert("di nagana");
+            }
+        }    
+document.addEventListener('DOMContentLoaded', function () {
+    const divContent = document.getElementById('downloadableQR');
+    const captureButton = document.getElementById('capture-button');
+
+    // Function to capture and convert the div to PNG
+    function captureDivAsPNG() {
+        html2canvas(divContent).then(function (canvas) {
+            // Create a new image element with the captured content
+            const img = new Image();
+            img.src = canvas.toDataURL('image/png');
+
+            // Open the image in a new window or save it as needed
+            const newWindow = window.open();
+            newWindow.document.body.appendChild(img);
+        });
+    }
+
+    // Attach a click event to the capture button
+    captureButton.addEventListener('click', captureDivAsPNG);
+    });
+
+    function saveVission(){
+        var btn = document.getElementById("btnVSave");
+        var vission = document.getElementById("vission").value;
+        var url =
+            "{% url 'updateVission'  'vission'  %}".replace('vission', vission);
+        btn.href = url;
+        alert(vission);
+    }
+    function saveMission(){
+        var btn = document.getElementById("btnMSave");
+        var mission = document.getElementById("mission").value;
+        var url =
+            "{% url 'updateMission'  'mission'  %}".replace('mission', mission);
+        btn.href = url;
+        alert(mission);
+    }
+
+    function save(){
+        var btn = document.getElementById("btnSave");
+        var name = document.getElementById("schoolName").value;
+        var address = document.getElementById("address").value;
+        var url =
+            "{% url 'updateProfile'  'name' 'address' %}".replace('name', name). replace('address',address);
+        btn.href = url;
+    }
+
+    var mission =  document.getElementById("mission");
+    var msave = document.getElementById("btnMSave");
+    var medit = document.getElementById("btnMEdit");
+    var vission =  document.getElementById("vission");
+    var vsave = document.getElementById("btnVSave");
+    var vedit = document.getElementById("btnVEdit");
+
+    function Mission(){
+
+        editMV(mission, msave, medit)
+    }
+    function Vission(){
+
+        editMV(vission, vsave, vedit)
+    }
+
+    function editMV(text, btnsave, btnedit){
+        text.removeAttribute("disabled");
+        text.removeAttribute("readonly");
+
+        text.classList.add("line");
+
+        btnsave.style.display="block";
+        btnedit.style.display="none";
+    }
+
+    function editProfile(){
+        var schoolName =  document.getElementById("schoolName");
+        var address = document.getElementById("address");
+        var save = document.getElementById("btnSave");
+        var edit = document.getElementById("btnEdit");
+
+        schoolName.removeAttribute("disabled");
+        schoolName.removeAttribute("readonly");
+        address.removeAttribute("disabled");
+        address.removeAttribute("readonly");
+
+        schoolName.classList.add("line");
+        address.classList.add("line");
+
+        save.style.display="block";
+        edit.style.display="none";
+    }
+
+</script>
+
+{% endblock %}

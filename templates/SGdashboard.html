@@ -1,0 +1,167 @@
+
+{% load static %}
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+        <script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
+    
+<!-- css files -->
+<link rel="stylesheet" href="{% static 'css/profileSG.css'%}">
+
+<!-- css files -->
+<link rel="stylesheet" href="{% static 'css/navbar.css'%}">
+    </head>
+    <body>
+       
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">
+      <div class="imageLogo">
+        <img class="logo" src="{% static 'images/final_logo.png' %}">
+      </div>
+    </a>
+    <p class="title-lower" style="margin-left: 200px;">User Logs in&nbsp; {{ profile.schoolName }}</p>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse navcon" id="navbarNav">
+      
+    </div>
+    <div class="dateTime">
+        <p style="font-weight: 700; margin-top: 17px;">School Guard | &nbsp;</p>
+      <div id="dateTime" style="height: fit-content;"></div> 
+    </div>
+  </nav>
+  
+<div class="maincon">
+  <div class="upperCon flex-row d-flex">
+    <div class="container1 d-flex col-9 flex-column">
+          <!-- Search Container -->
+      <div class="d-flex search-con">
+          <input class="form-control mr-sm-6 search" type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for names.." title="Type in a name">
+      </div>
+      <div class="tableCon d-flex flex-column" >
+        <table class="tables" id="myTable">
+            <theads>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">User Type</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Remarks</th>
+                </tr>
+            </theads>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td scope="row">{{ item.0 }}</td>
+                    <td>{{ item.1 }}</td>
+                    <td>{{ item.2 }}</td>
+                    <td>{{ item.3 }}</td>
+                    <td>{{ item.4 }}</td>
+                    <td>
+                        {% if  item.5  == 0 %}
+                        Valid Pass
+                        {% elif  item.5  == 1%}
+                        Mask Required
+                        {% else %}
+                        Invalid Pass
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+      </div>  
+    </div>
+    <i class="bi bi-download icon-dl"  id="capture-button" style="color: white; font-size: 1.5rem;"></i>
+    <div class="qr_con col-3" id="downloadableQR" >
+      <img class="qr" src="{% url 'qr'  %}" alt="QR Code">
+        <h6 style="color: white; margin-top: 20px;">Welcome to</h6>
+        <h4 style="color: white;">{{ profile.schoolName }}</h4> 
+    </div>   
+  </div>
+</div>
+ 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+
+<script>
+    
+function myFunction() {
+  var input, filter, table, tr, td, i, txtValue;
+  input = document.getElementById("myInput");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("myTable");
+  tr = table.getElementsByTagName("tr");
+  for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[1];
+    if (td) {
+      txtValue = td.textContent || td.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }       
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const divContent = document.getElementById('downloadableQR');
+    const captureButton = document.getElementById('capture-button');
+
+    // Function to capture and convert the div to PNG
+    function captureDivAsPNG() {
+        html2canvas(divContent).then(function (canvas) {
+            // Create a new image element with the captured content
+            const img = new Image();
+            img.src = canvas.toDataURL('image/png');
+
+            // Open the image in a new window or save it as needed
+            const newWindow = window.open();
+            newWindow.document.body.appendChild(img);
+        });
+    }
+
+    // Attach a click event to the capture button
+    captureButton.addEventListener('click', captureDivAsPNG);
+    });
+
+
+      // Function to update the date and time display
+  function updateDate() {
+    const currentDate = new Date();
+    const currentTime = new Date();
+    
+    const dateElement = document.getElementById("dateTime"); 
+
+    const dateString = currentDate.toLocaleDateString('en-US', {
+      year: 'numeric', day: 'numeric', month: 'long',});
+    const timeString = currentTime.toLocaleTimeString();
+
+    dateElement.textContent = dateString + " | "  +timeString;
+
+  }
+
+  updateDate();
+
+  setInterval(updateDate, 1000);
+</script>
+
+
+</body>
+</html>

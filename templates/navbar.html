@@ -1,0 +1,61 @@
+{% load static %}
+
+<!-- css files -->
+<link rel="stylesheet" href="{% static 'css/navbar.css'%}">
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">
+    <div class="imageLogo">
+      <img class="logo" src="{% static 'images/final_logo.png' %}">
+    </div>
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse navcon" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item ">
+        <a class="nav-link {% if request.path == '/' %}actives{% endif %}" href="{% url 'dashboard' %}">Dashboard </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if request.path == '/userLogs' %}actives{% endif %}" href="{% url 'logs' %}">Logs</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if request.path == '/accounts' %}actives{% endif %}" href="{% url 'home' %}">Accounts</a>
+      </li>
+    </ul>
+  </div>
+  <div class="dateTime">
+    <p style="font-weight: 700; margin-top: 17px;">System Administrator | &nbsp;</p>
+    <div id="dateTime" style="height: fit-content;"></div> 
+  </div>
+</nav>
+
+<script>
+
+  // Function to update the date and time display
+  function updateDate() {
+    const currentDate = new Date();
+    const currentTime = new Date();
+    
+    const dateElement = document.getElementById("dateTime"); 
+
+    const dateString = currentDate.toLocaleDateString('en-US', {
+      year: 'numeric', day: 'numeric', month: 'long',});
+    const timeString = currentTime.toLocaleTimeString();
+
+    dateElement.textContent = dateString + " | "  +timeString;
+
+  }
+
+  updateDate();
+
+  setInterval(updateDate, 1000);
+
+  function activeNav(){
+   
+  
+  }
+ 
+
+</script>
